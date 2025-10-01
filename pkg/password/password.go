@@ -4,11 +4,6 @@ import (
 	"crypto/rand"
 	"log"
 	"math/big"
-	"os"
-	"strconv"
-	"time"
-
-	"github.com/mclacore/passh/pkg/config"
 )
 
 func GeneratePassword(length int, lowercase, uppercase, numbers, special bool) string {
@@ -48,25 +43,4 @@ func GeneratePassword(length int, lowercase, uppercase, numbers, special bool) s
 	}
 
 	return string(password)
-}
-
-func MasterPasswordTimeout() {
-	timeVal, timeValErr := config.LoadConfigValue("auth", "timeout")
-	if timeValErr != nil {
-		log.Printf("Error loading timeout value: %v", timeValErr)
-		os.Exit(2)
-	}
-
-	if timeVal == "" {
-		config.SaveConfigValue("auth", "timeout", "900")
-	}
-
-	timeout, timeoutErr := strconv.Atoi(timeVal)
-	if timeoutErr != nil {
-		log.Printf("Error converting timeout string to int: %v", timeoutErr)
-		os.Exit(2)
-	}
-
-	time.Sleep(time.Duration(timeout) * time.Second)
-	config.SaveConfigValue("auth", "temp_pass", "")
 }

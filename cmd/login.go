@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/mclacore/passh/pkg/collection"
-	"github.com/mclacore/passh/pkg/database"
 	"github.com/mclacore/passh/pkg/login"
 	"github.com/mclacore/passh/pkg/password"
 	"github.com/mclacore/passh/pkg/prompt"
+	"github.com/mclacore/passh/pkg/store"
 	"github.com/spf13/cobra"
 )
 
@@ -78,6 +78,8 @@ func NewCmdLogin() *cobra.Command {
 }
 
 func runNewLogin(cmd *cobra.Command, args []string) error {
+	db := store.DB()
+
 	itemName, itemErr := cmd.Flags().GetString("item-name")
 	if itemErr != nil {
 		return fmt.Errorf("Error setting item-name: %w", itemErr)
@@ -108,23 +110,17 @@ func runNewLogin(cmd *cobra.Command, args []string) error {
 	}
 
 	col, colErr := cmd.Flags().GetString("collection-name")
-	// need to somehow create a collections table here if a collection is specified but does not exist as a table
+	if _, existErr := collection.GetCollectionByName(db, col); existErr != nil {
+		return fmt.Errorf("Collection %s does not exist. Please create it first using 'passh collection new -c %s'", col, col)
+	}
 	if colErr != nil {
 		return fmt.Errorf("Error setting collection: %w", colErr)
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %w", dbErr)
-	}
 
 	colId, colIdErr := collection.GetCollectionByName(db, col)
 	if colId == nil {
-		defCol := collection.Collection{
-			Name: "default",
-		}
-		collection.CreateCollection(db, defCol)
-		colId, colIdErr = collection.GetCollectionByName(db, "default")
+		return fmt.Errorf("Collection ID returning nil")
 	}
 	if colIdErr != nil {
 		return fmt.Errorf("Error getting collection id: %w", colIdErr)
@@ -138,7 +134,7 @@ func runNewLogin(cmd *cobra.Command, args []string) error {
 		CollectionID: int(colId.ID),
 	}
 
-	// need to check for unique constraints and error out about duplicate entry
+	//TODO:  need to check for unique constraints and error out about duplicate entry
 	// currently passing through SQL error
 	createErr := login.CreateLoginItem(db, loginItem)
 	if createErr != nil {
@@ -155,16 +151,13 @@ func runGetLogin(cmd *cobra.Command, args []string) error {
 	}
 
 	colName, colNameErr := cmd.Flags().GetString("collection-name")
-	// remove this part, and instead use promptui to check if a collection exists. if not, prompt user to create one on the spot.
+	//TODO: remove this part, and instead use promptui to check if a collection exists. if not, prompt user to create one on the spot.
 	// if only 1 collection exists, set it as the default somehow and don't need a prompt. however, when a 2+ collections exist, require it every time
 	if colNameErr != nil {
 		return fmt.Errorf("Error setting collection-name: %w", colNameErr)
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %w", dbErr)
-	}
+	db := store.DB()
 
 	getCol, getColErr := collection.GetCollectionByName(db, colName)
 	if getColErr != nil {
@@ -213,10 +206,7 @@ func runUpdateLogin(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error setting item-name: %w", itemErr)
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %w", dbErr)
-	}
+	db := store.DB()
 
 	colId, colIdErr := collection.GetCollectionByName(db, colName)
 	if colIdErr != nil {
@@ -278,10 +268,7 @@ func runListLogins(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error setting collection-name: %w", colNameErr)
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %w", dbErr)
-	}
+	db := store.DB()
 
 	colId, colIdErr := collection.GetCollectionByName(db, colName)
 	if colIdErr != nil {
@@ -308,10 +295,7 @@ func runDeleteLogin(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error setting collection-name: %w", colNameErr)
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %w", dbErr)
-	}
+	db := store.DB()
 
 	itemToDel, itemDelErr := cmd.Flags().GetString("item-name")
 	if itemDelErr != nil {
@@ -323,7 +307,7 @@ func runDeleteLogin(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error fetching collection: %w", colIdErr)
 	}
 
-	confirm, confirmErr := prompt.ConfirmItemDelete()
+	confirm, confirmErr := prompt.ConfirmLoginItemDelete()
 	if confirmErr != nil {
 		cmd.Printf("Operation cancelled.\n")
 		return nil

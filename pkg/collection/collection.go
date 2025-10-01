@@ -3,7 +3,7 @@ package collection
 import (
 	"log"
 
-	"github.com/mclacore/passh/pkg/database"
+	"github.com/mclacore/passh/pkg/store"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +44,7 @@ func GetCollectionById(db *gorm.DB, colId int) (*Collection, error) {
 	return &collection, nil
 }
 
-//TODO: need to build this into cmd/collection.go
+// TODO: need to build this into cmd/collection.go
 
 // Update a collection nametes a collection using a collection name.
 func UpdateCollection(db *gorm.DB, colName string) (*Collection, error) {
@@ -78,13 +78,9 @@ func DeleteCollection(db *gorm.DB, colName string) error {
 }
 
 func automigrateDB() {
-	db, err := database.ConnectToDB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := store.DB()
 
-	err = db.AutoMigrate(&Collection{})
-	if err != nil {
+	if err := db.AutoMigrate(&Collection{}); err != nil {
 		log.Fatal(err)
 	}
 }

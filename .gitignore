@@ -29,6 +29,5 @@ go.work.sum
 
 # Databasefiles
 *.db
+*.db_bak
 
-# Config files
-*.ini

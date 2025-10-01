@@ -2,10 +2,9 @@ package prompt
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/manifoldco/promptui"
-	"github.com/mclacore/passh/pkg/config"
-	"github.com/mclacore/passh/pkg/database"
 )
 
 var promptsWizard = []func() error{
@@ -63,11 +62,8 @@ func getPass() error {
 	}
 
 	if persist == "y" || persist == "Y" {
-		database.WizardPasswordSet(result)
-		config.SaveConfigValue("auth", "persist_pass", result)
+		fmt.Print(result)
 	} else {
-		database.WizardPasswordSet(result)
-		config.SaveConfigValue("auth", "temp_pass", result)
 		// for some reason, this isn't setting even though it'll set above
 		// will come back to this, but for now i can just document setting it after wizard manually
 		// config.SaveConfigValue("auth", "persist_pass", "")

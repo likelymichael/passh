@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mclacore/passh/pkg/collection"
-	"github.com/mclacore/passh/pkg/database"
+	"github.com/mclacore/passh/pkg/store"
 	"github.com/mclacore/passh/pkg/prompt"
 	"github.com/spf13/cobra"
 )
@@ -55,10 +55,7 @@ func runNewCollection(cmd *cobra.Command, args []string) error {
 		Name: colName,
 	}
 
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %V", dbErr)
-	}
+	db := store.DB()
 
 	createErr := collection.CreateCollection(db, newCol)
 	if createErr != nil {
@@ -68,10 +65,7 @@ func runNewCollection(cmd *cobra.Command, args []string) error {
 }
 
 func runListCollections(cmd *cobra.Command, args []string) error {
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %v", dbErr)
-	}
+	db := store.DB()
 
 	cols, colErr := collection.ListCollections(db)
 	if colErr != nil {
@@ -85,10 +79,7 @@ func runListCollections(cmd *cobra.Command, args []string) error {
 }
 
 func runDeleteCollection(cmd *cobra.Command, args []string) error {
-	db, dbErr := database.ConnectToDB()
-	if dbErr != nil {
-		return fmt.Errorf("Error connecting to database: %v", dbErr)
-	}
+	db := store.DB()
 
 	colToDel, colDelErr := cmd.Flags().GetString("collection-name")
 	if colDelErr != nil {

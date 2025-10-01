@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/mclacore/passh/pkg/collection"
-	"github.com/mclacore/passh/pkg/database"
+	"github.com/mclacore/passh/pkg/store"
 	"gorm.io/gorm"
 )
 
@@ -88,13 +88,9 @@ func AssignCollection(db *gorm.DB, itemName, colName string) error {
 }
 
 func automigrateDB() {
-	db, err := database.ConnectToDB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := store.DB()
 
-	err = db.AutoMigrate(&LoginItem{})
-	if err != nil {
+	if err := db.AutoMigrate(&LoginItem{}); err != nil {
 		log.Fatal(err)
 	}
 }
