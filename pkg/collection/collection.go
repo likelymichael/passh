@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Collection type containing a collection name.
 type Collection struct {
 	gorm.Model
 	Name string `gorm:"uniqueIndex"` // gorm:unique is not working? maybe add checking in create step
@@ -14,18 +15,7 @@ type Collection struct {
 
 var collection Collection
 
-func automigrateDB() {
-	db, err := database.ConnectToDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.AutoMigrate(&Collection{})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
+// Creates a collection.
 func CreateCollection(db *gorm.DB, col Collection) error {
 	automigrateDB()
 	result := db.Create(&col)
@@ -35,6 +25,7 @@ func CreateCollection(db *gorm.DB, col Collection) error {
 	return nil
 }
 
+// Fetches a collection using a collection name.
 func GetCollectionByName(db *gorm.DB, colName string) (*Collection, error) {
 	var col Collection
 	result := db.Where("name = ?", colName).Find(&col)
@@ -44,6 +35,7 @@ func GetCollectionByName(db *gorm.DB, colName string) (*Collection, error) {
 	return &col, nil
 }
 
+// Fetches a collection using a collection ID.
 func GetCollectionById(db *gorm.DB, colId int) (*Collection, error) {
 	result := db.Where("id = ?", colId).Find(&collection)
 	if result.Error != nil {
@@ -52,7 +44,9 @@ func GetCollectionById(db *gorm.DB, colId int) (*Collection, error) {
 	return &collection, nil
 }
 
-// need to build this into cmd/collection.go
+//TODO: need to build this into cmd/collection.go
+
+// Update a collection nametes a collection using a collection name.
 func UpdateCollection(db *gorm.DB, colName string) (*Collection, error) {
 	result := db.Where("name = ?", colName).Find(&collection)
 	if result.Error != nil {
@@ -61,6 +55,7 @@ func UpdateCollection(db *gorm.DB, colName string) (*Collection, error) {
 	return &collection, nil
 }
 
+// List all collections.
 func ListCollections(db *gorm.DB) (*[]Collection, error) {
 	var collections []Collection
 
@@ -73,10 +68,23 @@ func ListCollections(db *gorm.DB) (*[]Collection, error) {
 	return &collections, nil
 }
 
+// Delete a collection using a collection name.
 func DeleteCollection(db *gorm.DB, colName string) error {
 	result := db.Where("name = ?", colName).Delete(&collection)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
+}
+
+func automigrateDB() {
+	db, err := database.ConnectToDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.AutoMigrate(&Collection{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }

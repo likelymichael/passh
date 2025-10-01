@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// LoginItem type containing all data for a login item.
 type LoginItem struct {
 	gorm.Model
 	ItemName     string `gorm:"not null;uniqueIndex:idx_item_collection"`
@@ -20,18 +21,7 @@ type LoginItem struct {
 
 var loginItem LoginItem
 
-func automigrateDB() {
-	db, err := database.ConnectToDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.AutoMigrate(&LoginItem{})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
+// Create a login item.
 func CreateLoginItem(db *gorm.DB, item LoginItem) error {
 	automigrateDB()
 	result := db.Create(&item)
@@ -41,6 +31,7 @@ func CreateLoginItem(db *gorm.DB, item LoginItem) error {
 	return nil
 }
 
+// Fetch data for a login item.
 func GetLoginItem(db *gorm.DB, itemName string, colId int) (*LoginItem, error) {
 	result := db.Where("item_name = ? AND collection_id = ?", itemName, colId).Find(&loginItem)
 	if result.Error != nil {
@@ -49,6 +40,7 @@ func GetLoginItem(db *gorm.DB, itemName string, colId int) (*LoginItem, error) {
 	return &loginItem, nil
 }
 
+// Update data for a login item.
 func UpdateLoginItem(db *gorm.DB, loginItem *LoginItem) error {
 	result := db.Save(loginItem)
 	if result.Error != nil {
@@ -57,6 +49,7 @@ func UpdateLoginItem(db *gorm.DB, loginItem *LoginItem) error {
 	return nil
 }
 
+// List all login items in a collection.
 func ListLoginItems(db *gorm.DB, colId int) (*[]LoginItem, error) {
 	var loginItems []LoginItem
 
@@ -72,6 +65,7 @@ func ListLoginItems(db *gorm.DB, colId int) (*[]LoginItem, error) {
 	return &loginItems, nil
 }
 
+// Delete a login item.
 func DeleteLoginItem(db *gorm.DB, itemName string, colId int) error {
 	result := db.Where(&LoginItem{ItemName: itemName, CollectionID: colId}).Delete(&loginItem)
 	if result.Error != nil {
@@ -80,6 +74,7 @@ func DeleteLoginItem(db *gorm.DB, itemName string, colId int) error {
 	return nil
 }
 
+// Assign a login item to a collection.
 func AssignCollection(db *gorm.DB, itemName, colName string) error {
 	var col collection.Collection
 
@@ -90,4 +85,16 @@ func AssignCollection(db *gorm.DB, itemName, colName string) error {
 		return result.Error
 	}
 	return nil
+}
+
+func automigrateDB() {
+	db, err := database.ConnectToDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.AutoMigrate(&LoginItem{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
