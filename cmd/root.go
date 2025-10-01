@@ -6,6 +6,8 @@ package cmd
 import (
 	"log"
 	"os"
+	// "runtime/debug"
+	// "runtime/pprof"
 
 	"github.com/mclacore/passh/pkg/config"
 	"github.com/mclacore/passh/pkg/database"
@@ -78,17 +80,13 @@ var rootCmd = &cobra.Command{
 				os.Exit(401)
 			}
 
-			timeout, timeoutErr := config.LoadConfigValue("auth", "timeout")
-			if timeoutErr != nil {
-				log.Printf("Error loading timeout value: %v", timeoutErr)
-				os.Exit(5)
-			}
-
-			go password.MasterPasswordTimeout(timeout)
+			go password.MasterPasswordTimeout()
 		}
 	},
 	PostRun: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
+		// debug.PrintStack()
+		// pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
 	},
 }
 

@@ -2,6 +2,9 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+	"time"
 
 	"github.com/mclacore/passh/pkg/config"
 	"gorm.io/driver/postgres"
@@ -35,6 +38,8 @@ func ConnectToDB() (*gorm.DB, error) {
 		return nil, dbErr
 	}
 
+	go databaseTimeout()
+
 	return db, nil
 }
 
@@ -55,4 +60,23 @@ func WizardPasswordSet(input string) (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func databaseTimeout() {
+	timeVal, timeValErr := config.LoadConfigValue("auth", "timeout")
+	if timeValErr != nil {
+		log.Print(timeValErr)
+	}
+
+	if timeVal == "" {
+		config.SaveConfigValue("auth", "timeout", "900")
+	}
+
+	timeout, timeoutErr := strconv.Atoi(timeVal)
+	if timeoutErr != nil {
+		log.Print(timeoutErr)
+	}
+
+	time.Sleep(time.Duration(timeout) * time.Second)
+	config.SaveConfigValue("auth", "temp_pass", "")
 }

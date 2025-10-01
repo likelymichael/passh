@@ -116,7 +116,8 @@ passh collection delete --collection-name Work
 <!---
 TODO:
 
-- unlock passh with password, keep unlocked for 15 minutes? allow setting of env var?
+- pw being unlocked, but need to run every cmd w/ password. psql setting?
+- need to see list of running processes to make sure timeout is going to work
 - Create a way to look for passh files
 - Need to decrypt on db call, then encrypt after db call
 - Need fast decrypt/encrypt

@@ -96,7 +96,9 @@ func getPass() error {
 	} else {
 		database.WizardPasswordSet(result)
 		config.SaveConfigValue("auth", "temp_pass", result)
-		config.SaveConfigValue("auth", "persist_pass", "")
+		// for some reason, this isn't setting even though it'll set above
+		// will come back to this, but for now i can just document setting it after wizard manually
+		// config.SaveConfigValue("auth", "persist_pass", "")
 	}
 
 	return nil

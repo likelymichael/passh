@@ -4,3 +4,6 @@ test:
 
 bin:
 	mkdir bin
+
+build:
+	go build -o passh .

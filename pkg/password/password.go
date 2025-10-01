@@ -1,8 +1,9 @@
 package password
 
 import (
+	"crypto/rand"
 	"log"
-	"math/rand"
+	"math/big"
 	"os"
 	"strconv"
 	"time"
@@ -33,18 +34,23 @@ func GeneratePassword(length int, lowercase, uppercase, numbers, special bool) s
 		charset = append(charset, specials...)
 	}
 
+	if len(charset) == 0 {
+		log.Fatal("no character classes selected for password generation")
+	}
+
 	password := make([]byte, length)
 	for i := range password {
-		// something is panicing here when only enabling uppercase in password
-		// also when running passh pass new -x true, it should error out but instead
-		// is setting the charset to lowercase + uppercase
-		password[i] = charset[rand.Intn(len(charset))]
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			log.Fatalf("failed to generate secure random number: %v", err)
+		}
+		password[i] = charset[n.Int64()]
 	}
 
 	return string(password)
 }
 
-func MasterPasswordTimeout(input string) {
+func MasterPasswordTimeout() {
 	timeVal, timeValErr := config.LoadConfigValue("auth", "timeout")
 	if timeValErr != nil {
 		log.Printf("Error loading timeout value: %v", timeValErr)
@@ -62,5 +68,5 @@ func MasterPasswordTimeout(input string) {
 	}
 
 	time.Sleep(time.Duration(timeout) * time.Second)
-	config.SaveConfigValue("auth", "timeout", "")
+	config.SaveConfigValue("auth", "temp_pass", "")
 }
